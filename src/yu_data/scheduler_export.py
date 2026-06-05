@@ -16,11 +16,24 @@ import json
 from pathlib import Path
 from typing import Any
 
+from .obs.text import normalize_ws
+
+
+def _clean(text: Any) -> Any:
+    """Collapse whitespace on string values; pass ``None``/non-strings through."""
+    return normalize_ws(text) if isinstance(text, str) else text
+
 
 def _localized(value: Any) -> dict[str, str | None]:
-    """Return a ``{"tr", "en"}`` dict, tolerating missing/partial input."""
+    """Return a ``{"tr", "en"}`` dict, tolerating missing/partial input.
+
+    Whitespace is normalized here as a defensive net so re-running
+    ``export-catalog`` against an already-crawled ``dist/`` catalog still emits
+    canonical, single-spaced names/titles (the crawler also normalizes at parse
+    time, but the full catalog it reads from may predate that).
+    """
     source = value if isinstance(value, dict) else {}
-    return {"tr": source.get("tr"), "en": source.get("en")}
+    return {"tr": _clean(source.get("tr")), "en": _clean(source.get("en"))}
 
 
 def _program_course_codes(program: dict) -> list[str]:
@@ -64,7 +77,9 @@ def _en_disambiguator(name_tr: str | None) -> str | None:
     """
     tokens = (name_tr or "").split()
     thesis = next((v for token, v in _THESIS_TOKENS.items() if token in tokens), None)
-    language = next((v for token, v in _LANGUAGE_TOKENS.items() if token in tokens), None)
+    language = next(
+        (v for token, v in _LANGUAGE_TOKENS.items() if token in tokens), None
+    )
     parts = [part for part in (thesis, language) if part]
     return f"({'/'.join(parts)})" if parts else None
 

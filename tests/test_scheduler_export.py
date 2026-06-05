@@ -114,7 +114,9 @@ def test_duplicate_en_names_are_disambiguated_by_thesis_and_language():
     )
 
     names = {p["id"]: p["name"]["en"] for p in slim["programs"]}
-    assert names["master-50-401269"] == "INFORMATICS AND TECHNOLOGY LAW (Thesis/Turkish)"
+    assert (
+        names["master-50-401269"] == "INFORMATICS AND TECHNOLOGY LAW (Thesis/Turkish)"
+    )
     assert names["master-50-401270"] == (
         "INFORMATICS AND TECHNOLOGY LAW (Non-Thesis/Turkish)"
     )
@@ -147,10 +149,43 @@ def test_unique_en_names_are_left_untouched():
     assert names["master-1-1"] == "ECONOMICS"
 
 
-def test_tolerates_missing_fields():
+def test_names_and_titles_have_whitespace_collapsed():
+    # Defensive net: even if the full catalog predates the crawler's parse-time
+    # normalization, the slim export must emit single-spaced names/titles.
     slim = build_scheduler_catalog(
-        {"courses": {"X 1": {}}, "programs": [{"id": "p"}]}
+        {
+            "programs": [
+                {
+                    "id": "bachelor-1-2",
+                    "degree": "bachelor",
+                    "name": {
+                        "tr": "YAZILIM  MÜHENDİSLİĞİ",
+                        "en": "SOFTWARE  ENGINEERING",
+                    },
+                    "faculty": {
+                        "tr": "MÜHENDİSLİK  FAKÜLTESİ",
+                        "en": "FACULTY  OF  ENGINEERING",
+                    },
+                }
+            ],
+            "courses": {
+                "SE 101": {
+                    "title": {"tr": "GİRİŞ  DERSİ", "en": "INTRO  COURSE"},
+                    "akts": 6,
+                }
+            },
+        }
     )
+
+    program = slim["programs"][0]
+    assert program["name"]["en"] == "SOFTWARE ENGINEERING"
+    assert program["faculty"]["en"] == "FACULTY OF ENGINEERING"
+    assert slim["courses"]["SE 101"]["title"]["en"] == "INTRO COURSE"
+    assert slim["courses"]["SE 101"]["title"]["tr"] == "GİRİŞ DERSİ"
+
+
+def test_tolerates_missing_fields():
+    slim = build_scheduler_catalog({"courses": {"X 1": {}}, "programs": [{"id": "p"}]})
 
     assert slim["courses"]["X 1"] == {
         "title": {"tr": None, "en": None},

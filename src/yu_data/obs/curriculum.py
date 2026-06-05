@@ -26,6 +26,7 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 
 from .models import Curriculum, GridRow
+from .text import normalize_ws
 
 _TOGGLE_RE = re.compile(r"toggleRow\(this,\s*(\d+)\)")
 _COLLAPSE_RE = re.compile(r"^collapse_(\d+)$")
@@ -92,7 +93,10 @@ def parse_curriculum(html: str) -> Curriculum:
         if bgcolor == "#f7f7f7":  # repeated column header
             continue
 
-        cells = [td.get_text(" ", strip=True) for td in tr.find_all("td", recursive=False)]
+        cells = [
+            normalize_ws(td.get_text(" ", strip=True))
+            for td in tr.find_all("td", recursive=False)
+        ]
         if len(cells) < 8:
             continue
         code = cells[1] or None

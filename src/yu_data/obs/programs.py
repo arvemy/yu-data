@@ -12,6 +12,7 @@ from urllib.parse import parse_qs, urlparse
 from bs4 import BeautifulSoup
 
 from .models import ProgramRef
+from .text import normalize_ws
 
 
 def _query_int(href: str, key: str) -> int | None:
@@ -34,7 +35,7 @@ def parse_program_list(html: str, degree: str, lang: str) -> list[ProgramRef]:
 
     for panel in accordion.find_all("div", class_="panel"):
         heading = panel.find("a", attrs={"data-bs-toggle": "collapse"})
-        faculty = heading.get_text(strip=True) if heading else None
+        faculty = normalize_ws(heading.get_text(strip=True)) if heading else None
 
         for link in panel.select("ul.list-group li a[href*='curOp=showPac']"):
             href = link.get("href", "")
@@ -42,7 +43,7 @@ def parse_program_list(html: str, degree: str, lang: str) -> list[ProgramRef]:
             cur_sunit = _query_int(href, "curSunit")
             if cur_unit is None or cur_sunit is None:
                 continue
-            name = link.get_text(strip=True) or None
+            name = normalize_ws(link.get_text(strip=True)) or None
             program = ProgramRef(degree=degree, cur_unit=cur_unit, cur_sunit=cur_sunit)
             if lang == "tr":
                 program.name_tr, program.faculty_tr = name, faculty

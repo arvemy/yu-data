@@ -28,6 +28,26 @@ def test_excluded_pseudo_program_is_parsed_but_identifiable():
     assert any((p.cur_unit, p.cur_sunit) == EXCLUDED_PROGRAM for p in programs)
 
 
+def test_program_and_faculty_names_have_whitespace_collapsed():
+    # OBS ships doubled spaces inside a single text node (e.g. the live catalog's
+    # "SOFTWARE  ENGINEERING"); parsing should canonicalize them to single spaces.
+    html = """
+    <div id="accordion">
+      <div class="panel panel-default">
+        <a data-bs-toggle="collapse" href="#x">ENGINEERING  FACULTY</a>
+        <ul class="list-group">
+          <li><a href="index.aspx?curOp=showPac&curUnit=1&curSunit=2">SOFTWARE  ENGINEERING</a></li>
+        </ul>
+      </div>
+    </div>
+    """
+    programs = parse_program_list(html, "bachelor", "en")
+
+    assert len(programs) == 1
+    assert programs[0].name_en == "SOFTWARE ENGINEERING"
+    assert programs[0].faculty_en == "ENGINEERING FACULTY"
+
+
 def test_merge_languages_produces_bilingual_entries():
     tr = parse_program_list(_load("unitSelection_lis_tr.html"), "bachelor", "tr")
     en = parse_program_list(_load("unitSelection_lis_en.html"), "bachelor", "en")
