@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from . import scheduler_export
 from .obs.catalog import crawl
 from .obs.client import ObsClient
 from .schedules import summer_pdf
@@ -103,6 +104,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     summer_pdf.configure_parser(pdf_parser)
     pdf_parser.set_defaults(func=summer_pdf.run)
+
+    export_parser = sub.add_parser(
+        "export-catalog",
+        help="Slim the catalog JSON into the scheduler's static data.",
+    )
+    scheduler_export.configure_parser(export_parser)
+    export_parser.set_defaults(func=scheduler_export.run)
 
     return parser
 

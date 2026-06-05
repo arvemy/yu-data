@@ -31,6 +31,10 @@ uv run yu-data crawl-obs --limit-per-degree 1
 # Parse the summer-school PDF (writes term JSON; --no-manifest keeps yu-scheduler untouched)
 uv run yu-data parse-summer-pdf data/raw/YAZ-OKULU-ACILACAK-DERSLER-2025-2026.pdf \
     --no-manifest -o /tmp/2025-2026_summer.json
+
+# Slim dist/catalog/<year>.json into the scheduler's static data
+# (writes ../yu-scheduler/static/data/catalog/<year>.json by default)
+uv run yu-data export-catalog --academic-year 2025-2026
 ```
 
 ## Crawl scope (v1)
@@ -54,6 +58,11 @@ report.
   and a `courses{}` map keyed by course code.
 - `dist/reports/<year>-crawl-report.json` — counts, skipped programs, parse
   warnings, missing translations, and duplicate course-code conflicts.
+
+`export-catalog` then projects the catalog onto the slim schema YuScheduler
+consumes — `courses{}` (bilingual `title`, `akts`, `obs` links) and `programs[]`
+(`id`, `degree`, bilingual `name`/`faculty`, and the flat list of member
+`courses`) — written to `../yu-scheduler/static/data/catalog/<year>.json`.
 
 ## Layout
 
