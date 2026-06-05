@@ -11,6 +11,10 @@ Two things live here:
 2. **Summer-school PDF parser** — converts `YAZ-OKULU-ACILACAK-DERSLER-*.pdf`
    into YuScheduler term JSON (migrated from the original standalone script).
 
+## Connected Scheduler Project
+
+`yu-data` feeds the companion [YuScheduler](https://github.com/arvemy/yu-scheduler) web app. The two repositories are connected: this project crawls, parses, and exports normalized Yaşar University academic data, while YuScheduler consumes that data for course search and schedule generation.
+
 ## Setup
 
 ```bash
@@ -83,3 +87,7 @@ uv run pytest
 ```
 
 Tests run fully offline against saved fixtures in `tests/fixtures/`.
+
+## License
+
+MIT License. See [LICENSE](LICENSE).
